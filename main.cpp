@@ -1,0 +1,79 @@
+#include <iostream>
+#include <opencv2/opencv.hpp>
+
+using namespace std;
+using namespace cv;
+
+// 전역 변수 선언 (코드 4-11 방식 참고)
+Mat img;
+Point ptOld;
+
+void event_handler(int event, int x, int y, int flags, void* userdata);
+
+int main(void)
+{
+    // 1. 컬러 영상 읽기
+    img = imread("lenna.bmp", IMREAD_COLOR);
+
+    if (img.empty()) {
+        cerr << "Image load failed!" << endl;
+        return -1;
+    }
+
+    namedWindow("img");
+    setMouseCallback("img", event_handler);
+
+    cout << "마우스로 영역을 드래그하면 해당 영역이 새 창에 출력됩니다. (종료: q)" << endl;
+
+    while (true) {
+        imshow("img", img);
+        if (waitKey(10) == 'q') break;
+    }
+
+    destroyAllWindows();
+    return 0;
+}
+
+void event_handler(int event, int x, int y, int flags, void* userdata)
+{
+    switch (event) {
+    case EVENT_LBUTTONDOWN:
+        // 드래그 시작점 저장
+        ptOld = Point(x, y);
+        cout << "Drag Start: " << ptOld << endl;
+        break;
+
+    case EVENT_LBUTTONUP:
+    {
+        // 드래그 끝점 저장
+        Point ptNow(x, y);
+        cout << "Drag End: " << ptNow << endl;
+
+        // 두 점을 이용해 사각형(Rect) 영역 계산
+        // Rect(x, y, width, height) 형식을 맞추기 위해 min/max 사용
+        int sx = min(ptOld.x, ptNow.x);
+        int sy = min(ptOld.y, ptNow.y);
+        int width = abs(ptOld.x - ptNow.x);
+        int height = abs(ptOld.y - ptNow.y);
+
+        // 영역 크기가 0보다 큰 경우에만 추출
+        if (width > 0 && height > 0) {
+            // 원본 영상에서 해당 사각형 영역만 참조(ROI) 후 복사
+            Mat draggedRegion = img(Rect(sx, sy, width, height)).clone();
+
+            // 추출된 영역을 새 창에 표시
+            namedWindow("Extracted Region");
+            imshow("Extracted Region", draggedRegion);
+        }
+        break;
+    }
+
+    case EVENT_MOUSEMOVE:
+        // 버튼이 눌린 상태에서 움직이면 화면에 궤적을 보여줄 수도 있음 (선택 사항)
+        if (flags & EVENT_FLAG_LBUTTON) {
+            // 원본을 보존하고 싶다면 별도의 임시 영상을 사용해야 함
+            // 여기서는 4-11 코드처럼 단순 출력만 확인
+        }
+        break;
+    }
+}
