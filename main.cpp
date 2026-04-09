@@ -1,0 +1,72 @@
+#include <iostream>
+#include <opencv2/opencv.hpp>
+
+using namespace std;
+using namespace cv;
+
+// 마우스 콜백 함수 선언
+void on_mouse(int event, int x, int y, int flags, void* userdata);
+
+// 메뉴 박스 영역을 전역 혹은 구조체로 관리 (클릭 판정용)
+Rect rectRed(50, 50, 200, 100);
+Rect rectGreen(50, 160, 200, 100); // 간격을 두어 배치
+Rect rectBlue(260, 50, 200, 100);  // 우측 배치
+
+int main(void)
+{
+    // 1. 500x300 크기의 백색 초기 화면 생성
+    Mat img(300, 500, CV_8UC3, Scalar(255, 255, 255));
+
+    if (img.empty()) return -1;
+
+    // 초기 화면 메뉴 박스 및 문자열 출력
+    // Red 박스
+    rectangle(img, rectRed, Scalar(0, 0, 255), -1);
+    putText(img, "RED", Point(rectRed.x + 70, rectRed.y + 60),
+        FONT_HERSHEY_SIMPLEX, 1, Scalar(255, 255, 255), 2);
+
+    // Green 박스
+    rectangle(img, rectGreen, Scalar(0, 255, 0), -1);
+    putText(img, "GREEN", Point(rectGreen.x + 45, rectGreen.y + 60),
+        FONT_HERSHEY_SIMPLEX, 1, Scalar(255, 255, 255), 2);
+
+    // Blue 박스
+    rectangle(img, rectBlue, Scalar(255, 0, 0), -1);
+    putText(img, "BLUE", Point(rectBlue.x + 60, rectBlue.y + 60),
+        FONT_HERSHEY_SIMPLEX, 1, Scalar(255, 255, 255), 2);
+
+    namedWindow("Color Menu");
+    setMouseCallback("Color Menu", on_mouse, &img);
+
+    while (true) {
+        imshow("Color Menu", img);
+        if (waitKey(10) == 'q') break;
+    }
+
+    destroyAllWindows();
+    return 0;
+}
+
+void on_mouse(int event, int x, int y, int flags, void* userdata)
+{
+    if (event != EVENT_LBUTTONDOWN) return;
+
+    Mat& img = *(Mat*)userdata;
+    Point pt(x, y);
+
+    // ② Red 사각형 안에서 클릭 시
+    if (rectRed.contains(pt)) {
+        img.setTo(Scalar(0, 0, 255));
+        cout << "Background changed to RED" << endl;
+    }
+    // ③ Green 사각형 안에서 클릭 시
+    else if (rectGreen.contains(pt)) {
+        img.setTo(Scalar(0, 255, 0));
+        cout << "Background changed to GREEN" << endl;
+    }
+    // ④ Blue 사각형 안에서 클릭 시
+    else if (rectBlue.contains(pt)) {
+        img.setTo(Scalar(255, 0, 0));
+        cout << "Background changed to BLUE" << endl;
+    }
+}
