@@ -1,0 +1,64 @@
+#include <iostream>
+#include <opencv2/opencv.hpp>
+
+using namespace std;
+using namespace cv;
+
+// 마우스 콜백 함수 선언
+void on_mouse(int event, int x, int y, int flags, void* userdata);
+
+int main(void)
+{
+    // 1. 영상 불러오기
+    Mat img = imread("lenna.bmp");
+    if (img.empty()) {
+        cerr << "Image load failed!" << endl;
+        return -1;
+    }
+
+    namedWindow("img");
+
+    // 2. 마우스 콜백 설정 (img 객체의 주소를 전달하지만, 여기선 카운트 출력 위주)
+    setMouseCallback("img", on_mouse, &img);
+
+    cout << "--- 마우스 이벤트 카운트 시작 ---" << endl;
+
+    while (true) {
+        imshow("img", img);
+
+        // 'q'를 누르면 프로그램 종료
+        if (waitKey(10) == 'q') break;
+    }
+
+    destroyAllWindows();
+    return 0;
+}
+
+// 마우스 콜백 함수 정의
+void on_mouse(int event, int x, int y, int flags, void* userdata)
+{
+    // 이벤트 횟수를 저장할 정적(static) 변수
+    static int count_down = 0;
+    static int count_up = 0;
+    static int count_move = 0;
+
+    switch (event) {
+    case EVENT_LBUTTONDOWN:
+        count_down++;
+        cout << "왼쪽 버튼 Down 횟수: " << count_down << endl;
+        break;
+
+    case EVENT_LBUTTONUP:
+        count_up++;
+        cout << "왼쪽 버튼 Up 횟수: " << count_up << endl;
+        break;
+
+    case EVENT_MOUSEMOVE:
+        count_move++;
+        cout << "마우스 Move 횟수: " << count_move << endl;
+        break;
+
+    default:
+        break;
+    }
+}
