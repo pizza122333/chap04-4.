@@ -1,0 +1,55 @@
+#include <iostream>
+#include <opencv2/opencv.hpp>
+
+using namespace std;
+using namespace cv;
+
+// 마우스 콜백 함수 선언
+void on_mouse(int event, int x, int y, int flags, void* userdata);
+
+int main(void)
+{
+    // 1. 400x200 크기, 백색(255, 255, 255) 배경의 컬러 영상 생성
+    // Scalar(B, G, R) 순서
+    Mat img(200, 400, CV_8UC3, Scalar(255, 255, 255));
+
+    if (img.empty()) return -1;
+
+    namedWindow("img");
+
+    // 2. 마우스 콜백 설정 (Mat 객체 주소 전달)
+    setMouseCallback("img", on_mouse, &img);
+
+    while (true) {
+        imshow("img", img);
+
+        // 'q'를 누르면 종료
+        if (waitKey(10) == 'q') break;
+    }
+
+    destroyAllWindows();
+    return 0;
+}
+
+void on_mouse(int event, int x, int y, int flags, void* userdata)
+{
+    // void* 타입을 Mat* 타입으로 형변환
+    Mat& img = *(Mat*)userdata;
+
+    switch (event) {
+    case EVENT_LBUTTONDOWN:
+        // 왼쪽 버튼 클릭 시 배경을 Red로 변경 (BGR: 0, 0, 255)
+        img.setTo(Scalar(0, 0, 255));
+        cout << "Left Button Down: Background -> Red" << endl;
+        break;
+
+    case EVENT_RBUTTONDOWN:
+        // 오른쪽 버튼 클릭 시 배경을 Blue로 변경 (BGR: 255, 0, 0)
+        img.setTo(Scalar(255, 0, 0));
+        cout << "Right Button Down: Background -> Blue" << endl;
+        break;
+
+    default:
+        break;
+    }
+}
